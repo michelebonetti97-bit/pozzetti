@@ -1,0 +1,1053 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Rilievo Pozzetti GIS & CAD</title>
+  
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Pozzetti">
+
+  <style>
+    :root {
+      --bg: #f4f5f8;
+      --card-bg: #ffffff;
+      --card-border: #e2e8f0;
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --danger: #ef4444;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --input-bg: #f8fafc;
+      --shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -2px rgba(0,0,0,0.05);
+      --radius: 12px;
+    }
+
+    body.dark-mode {
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --card-border: #334155;
+      --primary: #3b82f6;
+      --primary-hover: #60a5fa;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --input-bg: #0f172a;
+      --shadow: 0 4px 6px -1px rgba(0,0,0,0.3);
+    }
+
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg);
+      color: var(--text-main);
+      margin: 0;
+      padding: 0 0 90px 0;
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    /* HEADER FIXO */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--card-bg);
+      border-bottom: 1px solid var(--card-border);
+      padding: 12px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: var(--shadow);
+    }
+
+    .brand { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 18px; }
+    .brand svg { fill: var(--primary); width: 24px; height: 24px; }
+
+    .header-controls { display: flex; gap: 8px; align-items: center; }
+
+    .theme-toggle, .btn-icon {
+      background: var(--input-bg);
+      border: 1px solid var(--card-border);
+      color: var(--text-main);
+      border-radius: 8px;
+      padding: 8px 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    /* NAV STEPS */
+    .stepper {
+      display: flex;
+      background: var(--card-bg);
+      border-bottom: 1px solid var(--card-border);
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .stepper::-webkit-scrollbar { display: none; }
+
+    .step-btn {
+      flex: 1;
+      min-width: 90px;
+      padding: 12px 8px;
+      text-align: center;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      border: none;
+      background: none;
+      border-bottom: 3px solid transparent;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .step-btn.active {
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+    }
+
+    /* MAIN CONTAINER */
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 16px;
+    }
+
+    .page { display: none; }
+    .page.active { display: block; }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow);
+    }
+
+    .card-title {
+      font-size: 14px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--primary);
+      margin: 0 0 14px 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .form-group { margin-bottom: 14px; }
+    .form-group:last-child { margin-bottom: 0; }
+
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: var(--text-main);
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 12px;
+      font-size: 15px;
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      background: var(--input-bg);
+      color: var(--text-main);
+      transition: border-color 0.2s;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    .row { display: flex; gap: 12px; }
+    .col { flex: 1; }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px 16px;
+      font-size: 14px;
+      font-weight: 600;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      gap: 8px;
+      width: 100%;
+      transition: opacity 0.2s;
+    }
+    .btn:active { opacity: 0.8; }
+
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-secondary { background: var(--input-bg); color: var(--text-main); border: 1px solid var(--card-border); }
+    .btn-success { background: var(--success); color: white; }
+    .btn-danger { background: var(--danger); color: white; }
+    .btn-warning { background: var(--warning); color: white; }
+
+    /* FOTO PREVIEW */
+    .photo-box {
+      border: 2px dashed var(--card-border);
+      border-radius: var(--radius);
+      padding: 20px;
+      text-align: center;
+      background: var(--input-bg);
+      cursor: pointer;
+      position: relative;
+    }
+    .photo-preview {
+      width: 100%;
+      max-height: 250px;
+      object-fit: cover;
+      border-radius: 8px;
+      display: none;
+    }
+
+    /* CANVAS SCHEMI */
+    .canvas-container {
+      background: #ffffff;
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 8px;
+      text-align: center;
+      margin-top: 10px;
+    }
+    canvas {
+      width: 100%;
+      max-width: 350px;
+      height: 250px;
+      background: #ffffff;
+      border-radius: 4px;
+    }
+
+    /* TABELLA TUBI */
+    .pipe-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin-top: 10px;
+    }
+    .pipe-table th, .pipe-table td {
+      border: 1px solid var(--card-border);
+      padding: 8px;
+      text-align: center;
+    }
+    .pipe-table th { background: var(--input-bg); color: var(--text-muted); }
+
+    /* BARRA FISSA IN BASSO */
+    .nav-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--card-bg);
+      border-top: 1px solid var(--card-border);
+      padding: 10px 16px;
+      display: flex;
+      gap: 10px;
+      z-index: 100;
+    }
+
+    /* MODALE MONOGRAFIA A4 */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.7);
+      z-index: 200;
+      overflow-y: auto;
+      padding: 10px;
+    }
+    .modal-content {
+      background: white;
+      color: black;
+      max-width: 800px;
+      margin: 20px auto;
+      padding: 25px;
+      border-radius: 8px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    }
+
+    /* LAYOUT STAMPA MONOGRAFIA A4 */
+    .sheet-a4 {
+      background: white;
+      color: #000;
+      font-family: Arial, sans-serif;
+      font-size: 12px;
+      line-height: 1.3;
+    }
+    .sheet-header {
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 2px solid #000;
+      padding-bottom: 8px;
+      margin-bottom: 12px;
+    }
+    .sheet-title { font-size: 18px; font-weight: bold; text-transform: uppercase; }
+    .sheet-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+    .sheet-table { width: 100%; border-collapse: collapse; margin-bottom: 12px; font-size: 11px; }
+    .sheet-table th, .sheet-table td { border: 1px solid #000; padding: 5px; text-align: left; }
+    .sheet-table th { background: #f0f0f0; }
+    .sheet-diagrams { display: flex; gap: 10px; justify-content: space-between; margin-top: 10px; }
+    .sheet-diagram-box { flex: 1; border: 1px solid #000; padding: 6px; text-align: center; }
+    .sheet-diagram-box img { max-width: 100%; height: 180px; object-fit: contain; }
+
+    @media print {
+      body * { visibility: hidden; }
+      .modal, .modal-content, .sheet-a4, .sheet-a4 * { visibility: visible; }
+      .modal { position: absolute; left: 0; top: 0; width: 100%; background: white; padding: 0; }
+      .modal-content { box-shadow: none; padding: 0; margin: 0; max-width: 100%; }
+      .no-print { display: none !important; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header class="no-print">
+    <div class="brand">
+      <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>
+      <span>Scheda Pozzetti</span>
+    </div>
+    <div class="header-controls">
+      <button class="theme-toggle" onclick="toggleTheme()">☀️ / 🌙</button>
+      <select id="projectSelect" onchange="cambiaProgetto()" style="padding: 6px; font-size: 12px; width: auto;">
+        <!-- Dinamico -->
+      </select>
+      <button class="btn-icon" onclick="nuovoProgetto()">➕ Progetto</button>
+    </div>
+  </header>
+
+  <!-- STEPPER -->
+  <div class="stepper no-print">
+    <button class="step-btn active" onclick="setStep(1)">1. Info & GPS</button>
+    <button class="step-btn" onclick="setStep(2)">2. Struttura</button>
+    <button class="step-btn" onclick="setStep(3)">3. Tubi & Disegno</button>
+    <button class="step-btn" onclick="setStep(4)">4. Archivio & Export</button>
+  </div>
+
+  <div class="container no-print">
+    
+    <!-- STEP 1: INFO GENERALI, GPS & FOTO -->
+    <div id="step1" class="page active">
+      <div class="card">
+        <div class="card-title">Identificazione Pozzetto</div>
+        <div class="row">
+          <div class="col form-group">
+            <label>ID Pozzetto *</label>
+            <input type="text" id="codice" placeholder="es. PZ-001" required>
+          </div>
+          <div class="col form-group">
+            <label>Tipo Rete</label>
+            <select id="tipo" onchange="checkTipoAltro()">
+              <option value="Fognatura Bianca">Fognatura Bianca</option>
+              <option value="Fognatura Nera">Fognatura Nera</option>
+              <option value="Fognatura Mista">Fognatura Mista</option>
+              <option value="Acquedotto">Acquedotto</option>
+              <option value="Elettrico / Telecom">Elettrico / Telecom</option>
+              <option value="Altro">Altro (Specifica...)</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group" id="altroTipoBox" style="display:none;">
+          <label>Specifica Tipo Rete</label>
+          <input type="text" id="tipoAltro" placeholder="es. Rete Gas / Fibra">
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Geolocalizzazione GPS</div>
+        <div class="row">
+          <div class="col form-group">
+            <label>Latitudine (WGS84)</label>
+            <input type="number" step="any" id="lat" placeholder="45.xxxxxx">
+          </div>
+          <div class="col form-group">
+            <label>Longitudine (WGS84)</label>
+            <input type="number" step="any" id="lon" placeholder="11.xxxxxx">
+          </div>
+        </div>
+        <div class="row">
+          <div class="col form-group">
+            <label>Quota s.l.m. (Z in metri)</label>
+            <input type="number" step="0.01" id="quotaSLM" placeholder="es. 120.50">
+          </div>
+        </div>
+        <button type="button" class="btn btn-secondary" onclick="rilevaGPS()">📍 Rileva Coordinate GPS</button>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Fotografia Pozzetto</div>
+        <div class="photo-box" onclick="document.getElementById('photoInput').click()">
+          <input type="file" id="photoInput" accept="image/*" capture="environment" style="display:none;" onchange="caricaFoto(this)">
+          <div id="photoPlaceholder">
+            📷 Tocca per scattare o caricare la foto
+          </div>
+          <img id="photoPreview" class="photo-preview">
+        </div>
+        <button type="button" id="btnRemovePhoto" class="btn btn-danger" style="display:none; margin-top:10px;" onclick="rimuoviFoto()">Rimuovi Foto</button>
+      </div>
+    </div>
+
+    <!-- STEP 2: STRUTTURA & GEOMETRIA -->
+    <div id="step2" class="page">
+      <div class="card">
+        <div class="card-title">Chiusino & Copertura</div>
+        <div class="row">
+          <div class="col form-group">
+            <label>Forma Chiusino</label>
+            <select id="formaChiusino" onchange="disegnaSchemi()">
+              <option value="Circolare">Circolare</option>
+              <option value="Quadrato">Quadrato</option>
+              <option value="Rettangolare">Rettangolare</option>
+            </select>
+          </div>
+          <div class="col form-group">
+            <label>Classe Carico</label>
+            <select id="classeCarico">
+              <option value="D400 (Strade/Carreggiate)">D400 (Strade)</option>
+              <option value="C250 (Banchine/Parcheggi)">C250 (Banchine)</option>
+              <option value="B125 (Marciapiedi/Pedonale)">B125 (Pedonale)</option>
+              <option value="E600 / F900 (Aeroporti/Industriale)">E600/F900 (Speciale)</option>
+            </select>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col form-group">
+            <label>Dimensione Chiusino (cm)</label>
+            <input type="text" id="dimChiusino" placeholder="es. Ø60 o 60x60" onchange="disegnaSchemi()">
+          </div>
+          <div class="col form-group">
+            <label>Materiale Chiusino</label>
+            <select id="matChiusino">
+              <option value="Ghisa Sferoidale">Ghisa Sferoidale</option>
+              <option value="Calcestruzzo">Calcestruzzo</option>
+              <option value="Acciaio">Acciaio</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Canna di Caduta e Fondo</div>
+        <div class="row">
+          <div class="col form-group">
+            <label>Forma Fusto/Canna</label>
+            <select id="formaFusto" onchange="disegnaSchemi()">
+              <option value="Circolare">Circolare</option>
+              <option value="Rettangolare">Rettangolare</option>
+              <option value="Quadrato">Quadrato</option>
+            </select>
+          </div>
+          <div class="col form-group">
+            <label>Materiale Fusto</label>
+            <select id="matFusto">
+              <option value="Calcestruzzo">Calcestruzzo Prefabbricato</option>
+              <option value="Muratura di Mattoni">Muratura di Mattoni</option>
+              <option value="PE / PVC">Polietilene / PVC</option>
+            </select>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col form-group">
+            <label>Dimensione Fusto (cm)</label>
+            <input type="text" id="dimFusto" placeholder="es. Ø100 o 100x100" value="100" onchange="disegnaSchemi()">
+          </div>
+          <div class="col form-group">
+            <label>Profondità Totale H (m) *</label>
+            <input type="number" step="0.01" id="profondita" placeholder="es. 1.80" value="1.80" onchange="disegnaSchemi()">
+          </div>
+        </div>
+        <div class="row">
+          <div class="col form-group">
+            <label>Presenza Scala</label>
+            <select id="scala" onchange="disegnaSchemi()">
+              <option value="Si">Si (Gradini)</option>
+              <option value="No">No</option>
+            </select>
+          </div>
+          <div class="col form-group">
+            <label>Cunetta sul Fondo</label>
+            <select id="cunetta">
+              <option value="Presente">Presente (Sagomata)</option>
+              <option value="Assente">Assente (Fondo Piatto)</option>
+            </select>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col form-group">
+            <label>Livello Acqua (cm)</label>
+            <input type="number" id="livAcqua" value="0" placeholder="0" onchange="disegnaSchemi()">
+          </div>
+          <div class="col form-group">
+            <label>Sedimenti / Mota (cm)</label>
+            <input type="number" id="livSedimenti" value="0" placeholder="0" onchange="disegnaSchemi()">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 3: TUBI & ANTEPRIMA GRAFICA -->
+    <div id="step3" class="page">
+      <div class="card">
+        <div class="card-title">
+          <span>Condotte Collegate</span>
+          <button type="button" class="btn btn-secondary" style="width:auto; padding: 4px 10px;" onclick="aggiungiTubo()">➕ Aggiungi Tubo</button>
+        </div>
+        <table class="pipe-table">
+          <thead>
+            <tr>
+              <th>Funzione</th>
+              <th>Direzione</th>
+              <th>DN (mm)</th>
+              <th>Prof. (m)</th>
+              <th>Azione</th>
+            </tr>
+          </thead>
+          <tbody id="pipeTableBody">
+            <!-- Tubi aggiunti dinamicamente -->
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Anteprima Grafica in Tempo Reale</div>
+        <div class="row">
+          <div class="col">
+            <label style="text-align:center;">Vista in Pianta (Orientata)</label>
+            <div class="canvas-container">
+              <canvas id="canvasPianta"></canvas>
+            </div>
+          </div>
+          <div class="col">
+            <label style="text-align:center;">Vista in Sezione (Profilo)</label>
+            <div class="canvas-container">
+              <canvas id="canvasSezione"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 4: ARCHIVIO & EXPORT -->
+    <div id="step4" class="page">
+      <div class="card">
+        <div class="card-title">Archivio Pozzetti Progetto</div>
+        <div id="listaPozzetti">
+          <!-- Lista schede salvate -->
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Esportazione & Reportistica</div>
+        <div class="form-group">
+          <label>Sistema Coordinate per Esportazione CAD/GIS</label>
+          <select id="crsTarget">
+            <option value="EPSG:32632">UTM WGS84 Zona 32N (EPSG:32632)</option>
+            <option value="EPSG:6708">RDN2008 / TM32 (EPSG:6708)</option>
+            <option value="EPSG:3003">Gauss-Boaga Ovest (EPSG:3003)</option>
+            <option value="EPSG:3004">Gauss-Boaga Est (EPSG:3004)</option>
+          </select>
+        </div>
+        <div class="row" style="flex-wrap: wrap;">
+          <button class="btn btn-warning" onclick="apriAnteprimaMonografia()" style="margin-bottom:8px;">📄 Anteprima Scheda A4 / Stampa PDF</button>
+          <button class="btn btn-primary" onclick="esportaDXFProgetto()" style="margin-bottom:8px;">📐 Esporta DXF (AutoCAD 1:1)</button>
+          <button class="btn btn-success" onclick="esportaGeoJSON()" style="margin-bottom:8px;">🗺️ Esporta GeoJSON per QGIS</button>
+          <button class="btn btn-secondary" onclick="esportaCSV()">📊 Esporta CSV Excel</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- BARRA NAVIGAZIONE FISSA -->
+  <div class="nav-bar no-print">
+    <button class="btn btn-secondary" onclick="stepPrecedente()">⬅️ Indietro</button>
+    <button class="btn btn-success" onclick="salvaScheda()">💾 Salva Scheda</button>
+    <button class="btn btn-primary" onclick="stepSuccessivo()">Avanti ➡️</button>
+  </div>
+
+  <!-- MODALE ANTEPRIMA MONOGRAFIA A4 PER STAMPA PERFETTA -->
+  <div id="modalMonografia" class="modal">
+    <div class="modal-content">
+      <div class="no-print" style="display:flex; justify-content:space-between; margin-bottom:15px;">
+        <button class="btn btn-primary" style="width:auto;" onclick="window.print()">🖨️ Stampa / Salva PDF</button>
+        <button class="btn btn-danger" style="width:auto;" onclick="chiudiAnteprimaMonografia()">Chiudi</button>
+      </div>
+
+      <!-- FOGLIO A4 -->
+      <div id="sheetPrintArea" class="sheet-a4">
+        <div class="sheet-header">
+          <div>
+            <div class="sheet-title">Scheda Monografica Pozzetto</div>
+            <div>Progetto: <strong id="mProgetto">-</strong></div>
+          </div>
+          <div style="text-align:right;">
+            <div>ID Pozzetto: <strong id="mCodice" style="font-size:16px;">-</strong></div>
+            <div>Data: <span id="mData">-</span></div>
+          </div>
+        </div>
+
+        <div class="sheet-grid">
+          <div>
+            <table class="sheet-table">
+              <tr><th colspan="2">Dati Generali & Ubicazione</th></tr>
+              <tr><td>Tipologia Rete:</td><td id="mTipo">-</td></tr>
+              <tr><td>Latitudine (WGS84):</td><td id="mLat">-</td></tr>
+              <tr><td>Longitudine (WGS84):</td><td id="mLon">-</td></tr>
+              <tr><td>Quota s.l.m. Z:</td><td id="mQuota">-</td></tr>
+            </table>
+
+            <table class="sheet-table">
+              <tr><th colspan="2">Geometria & Struttura</th></tr>
+              <tr><td>Forma Chiusino:</td><td id="mFormaC">-</td></tr>
+              <tr><td>Dimens. Chiusino:</td><td id="mDimC">-</td></tr>
+              <tr><td>Materiale Fusto:</td><td id="mMatF">-</td></tr>
+              <tr><td>Profondità Totale H:</td><td id="mProfH">-</td></tr>
+              <tr><td>Stato Conservazione:</td><td id="mStato">-</td></tr>
+            </table>
+          </div>
+
+          <div style="text-align:center; border:1px solid #000; padding:4px;">
+            <div style="font-weight:bold; margin-bottom:4px;">Fotografia Pozzetto</div>
+            <img id="mFoto" style="max-width:100%; max-height:170px; object-fit:contain;" src="" alt="Nessuna Foto">
+          </div>
+        </div>
+
+        <div style="font-weight:bold; margin-bottom:4px;">Condotte Collegate (Tubi)</div>
+        <table class="sheet-table">
+          <thead>
+            <tr>
+              <th>Funzione</th>
+              <th>Direzione</th>
+              <th>Diametro DN (mm)</th>
+              <th>Profondità Scorrimento (m)</th>
+              <th>Materiale</th>
+            </tr>
+          </thead>
+          <tbody id="mTableTubi">
+            <!-- Tubi monografia -->
+          </tbody>
+        </table>
+
+        <div class="sheet-diagrams">
+          <div class="sheet-diagram-box">
+            <div style="font-weight:bold; font-size:11px;">VISTA IN PIANTA (Orientata N/S)</div>
+            <img id="mImgPianta" src="" alt="Pianta">
+          </div>
+          <div class="sheet-diagram-box">
+            <div style="font-weight:bold; font-size:11px;">VISTA IN SEZIONE (Profilo H)</div>
+            <img id="mImgSezione" src="" alt="Sezione">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* STATE MANAGEMENT LOCAL STORAGE */
+    let attiveStep = 1;
+    let progetti = JSON.parse(localStorage.getItem('pozzetti_progetti')) || ['Cantiere Milano', 'Cantiere Bergamo'];
+    let progettoAttivo = localStorage.getItem('pozzetti_progetto_attivo') || progetti[0];
+    let pozzetti = JSON.parse(localStorage.getItem('pozzetti_data')) || [];
+    let tubiCorrenti = [
+      { funzione: 'Ingress', direzione: 'N', dn: 250, prof: 1.20, materiale: 'PVC' },
+      { funzione: 'Uscita', direzione: 'S', dn: 300, prof: 1.50, materiale: 'PVC' }
+    ];
+    let fotoBase64 = '';
+
+    document.addEventListener('DOMContentLoaded', () => {
+      initProgetti();
+      renderTubi();
+      disegnaSchemi();
+      aggiornaListaArchivio();
+    });
+
+    /* STEP NAVIGATION */
+    function setStep(step) {
+      attiveStep = step;
+      document.querySelectorAll('.step-btn').forEach((btn, idx) => {
+        btn.classList.toggle('active', (idx + 1) === step);
+      });
+      document.querySelectorAll('.page').forEach((pg, idx) => {
+        pg.classList.toggle('active', (idx + 1) === step);
+      });
+      if (step === 3) setTimeout(disegnaSchemi, 100);
+      if (step === 4) aggiornaListaArchivio();
+    }
+    function stepSuccessivo() { if (attiveStep < 4) setStep(attiveStep + 1); }
+    function stepPrecedente() { if (attiveStep > 1) setStep(attiveStep - 1); }
+
+    /* THEME TOGGLE */
+    function toggleTheme() {
+      document.body.classList.toggle('dark-mode');
+      disegnaSchemi();
+    }
+
+    /* PROGETTI MANAGEMENT */
+    function initProgetti() {
+      const select = document.getElementById('projectSelect');
+      select.innerHTML = progetti.map(p => `<option value="${p}" ${p === progettoAttivo ? 'selected' : ''}>${p}</option>`).join('');
+    }
+    function cambiaProgetto() {
+      progettoAttivo = document.getElementById('projectSelect').value;
+      localStorage.setItem('pozzetti_progetto_attivo', progettoAttivo);
+      aggiornaListaArchivio();
+    }
+    function nuovoProgetto() {
+      const nome = prompt("Nome nuovo progetto/cantiere:");
+      if (nome && !progetti.includes(nome)) {
+        progetti.push(nome);
+        localStorage.setItem('pozzetti_progetti', JSON.stringify(progetti));
+        progettoAttivo = nome;
+        localStorage.setItem('pozzetti_progetto_attivo', progettoAttivo);
+        initProgetti();
+        aggiornaListaArchivio();
+      }
+    }
+
+    /* GPS */
+    function rilevaGPS() {
+      if ('geolocation' in navigator) {
+        navigator.geolocation.getCurrentPosition(pos => {
+          document.getElementById('lat').value = pos.coords.latitude.toFixed(6);
+          document.getElementById('lon').value = pos.coords.longitude.toFixed(6);
+          if (pos.coords.altitude) document.getElementById('quotaSLM').value = pos.coords.altitude.toFixed(2);
+        }, err => alert('Errore GPS: ' + err.message), { enableHighAccuracy: true });
+      } else alert('GPS non supportato');
+    }
+
+    /* FOTO */
+    function caricaFoto(input) {
+      if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          fotoBase64 = e.target.result;
+          document.getElementById('photoPreview').src = fotoBase64;
+          document.getElementById('photoPreview').style.display = 'block';
+          document.getElementById('photoPlaceholder').style.display = 'none';
+          document.getElementById('btnRemovePhoto').style.display = 'block';
+        };
+        reader.readAsDataURL(input.files[0]);
+      }
+    }
+    function rimuoviFoto() {
+      fotoBase64 = '';
+      document.getElementById('photoPreview').style.display = 'none';
+      document.getElementById('photoPlaceholder').style.display = 'block';
+      document.getElementById('btnRemovePhoto').style.display = 'none';
+    }
+
+    function checkTipoAltro() {
+      const val = document.getElementById('tipo').value;
+      document.getElementById('altroTipoBox').style.display = (val === 'Altro') ? 'block' : 'none';
+    }
+
+    /* TUBI DYNAMIC TABLE */
+    function renderTubi() {
+      const tbody = document.getElementById('pipeTableBody');
+      tbody.innerHTML = tubiCorrenti.map((t, idx) => `
+        <tr>
+          <td>
+            <select style="padding:4px;" onchange="tubiCorrenti[${idx}].funzione=this.value; disegnaSchemi();">
+              <option value="Ingresso" ${t.funzione==='Ingresso'?'selected':''}>Ingresso</option>
+              <option value="Uscita" ${t.funzione==='Uscita'?'selected':''}>Uscita</option>
+            </select>
+          </td>
+          <td>
+            <select style="padding:4px;" onchange="tubiCorrenti[${idx}].direzione=this.value; disegnaSchemi();">
+              ${['N','NE','E','SE','S','SO','O','NO'].map(d => `<option value="${d}" ${t.direzione===d?'selected':''}>${d}</option>`).join('')}
+            </select>
+          </td>
+          <td><input type="number" style="padding:4px;" value="${t.dn}" onchange="tubiCorrenti[${idx}].dn=parseInt(this.value); disegnaSchemi();"></td>
+          <td><input type="number" step="0.01" style="padding:4px;" value="${t.prof}" onchange="tubiCorrenti[${idx}].prof=parseFloat(this.value); disegnaSchemi();"></td>
+          <td><button class="btn btn-danger" style="padding:2px 6px; font-size:11px;" onclick="eliminaTubo(${idx})">X</button></td>
+        </tr>
+      `).join('');
+    }
+    function aggiungiTubo() {
+      tubiCorrenti.push({ funzione: 'Ingresso', direzione: 'N', dn: 200, prof: 1.00, materiale: 'PVC' });
+      renderTubi();
+      disegnaSchemi();
+    }
+    function eliminaTubo(idx) {
+      tubiCorrenti.splice(idx, 1);
+      renderTubi();
+      disegnaSchemi();
+    }
+
+    /* DISAGNO CANVAS PIANTA E SEZIONE */
+    function disegnaSchemi() {
+      disegnaPianta();
+      disegnaSezione();
+    }
+
+    function disegnaPianta() {
+      const cvs = document.getElementById('canvasPianta');
+      const ctx = cvs.getContext('2d');
+      cvs.width = 300; cvs.height = 250;
+      const w = cvs.width, h = cvs.height;
+
+      ctx.clearRect(0, 0, w, h);
+
+      // Bussola N/S
+      ctx.fillStyle = "#94a3b8"; ctx.font = "12px sans-serif";
+      ctx.fillText("N", w/2 - 4, 15); ctx.fillText("S", w/2 - 4, h - 5);
+      ctx.fillText("O", 10, h/2 + 4); ctx.fillText("E", w - 18, h/2 + 4);
+
+      // Fusto Pozzetto
+      const cx = w/2, cy = h/2;
+      const shape = document.getElementById('formaFusto').value;
+      ctx.strokeStyle = "#334155"; ctx.lineWidth = 3; ctx.fillStyle = "#e2e8f0";
+
+      if (shape === 'Circolare') {
+        ctx.beginPath(); ctx.arc(cx, cy, 50, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+      } else {
+        ctx.fillRect(cx - 45, cy - 45, 90, 90);
+        ctx.strokeRect(cx - 45, cy - 45, 90, 90);
+      }
+
+      // Chiusino interno
+      ctx.strokeStyle = "#0284c7"; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(cx, cy, 25, 0, Math.PI*2); ctx.stroke();
+
+      // Tubi
+      const dirAngles = { 'N':-90, 'NE':-45, 'E':0, 'SE':45, 'S':90, 'SO':135, 'O':180, 'NO':-135 };
+      tubiCorrenti.forEach(t => {
+        const rad = (dirAngles[t.direzione] || 0) * Math.PI / 180;
+        const tx = cx + Math.cos(rad) * 50;
+        const ty = cy + Math.sin(rad) * 50;
+        const ex = cx + Math.cos(rad) * 110;
+        const ey = cy + Math.sin(rad) * 110;
+
+        ctx.strokeStyle = (t.funzione === 'Ingresso') ? '#10b981' : '#ef4444';
+        ctx.lineWidth = Math.max(4, t.dn / 50);
+        ctx.beginPath(); ctx.moveTo(tx, ty); ctx.lineTo(ex, ey); ctx.stroke();
+
+        ctx.fillStyle = "#0f172a"; ctx.font = "10px sans-serif";
+        ctx.fillText(`DN${t.dn}`, ex - 10, ey - 5);
+      });
+    }
+
+    function disegnaSezione() {
+      const cvs = document.getElementById('canvasSezione');
+      const ctx = cvs.getContext('2d');
+      cvs.width = 300; cvs.height = 250;
+      const w = cvs.width, h = cvs.height;
+
+      ctx.clearRect(0, 0, w, h);
+
+      // Piano Campagna
+      ctx.strokeStyle = "#16a34a"; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.moveTo(10, 40); ctx.lineTo(w - 10, 40); ctx.stroke();
+      ctx.fillStyle = "#16a34a"; ctx.font = "11px sans-serif"; ctx.fillText("P.C.", 15, 32);
+
+      // Corpo Pozzetto
+      ctx.fillStyle = "#cbd5e1"; ctx.strokeStyle = "#334155"; ctx.lineWidth = 2;
+      ctx.fillRect(80, 40, 140, 170);
+      ctx.strokeRect(80, 40, 140, 170);
+
+      // Scavo interno
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(95, 45, 110, 160);
+
+      // Scala gradini
+      if (document.getElementById('scala').value === 'Si') {
+        ctx.strokeStyle = "#f59e0b"; ctx.lineWidth = 2;
+        for(let y=70; y<190; y+=30) {
+          ctx.beginPath(); ctx.moveTo(100, y); ctx.lineTo(115, y); ctx.stroke();
+        }
+      }
+
+      // Profondità H Quota
+      const profH = parseFloat(document.getElementById('profondita').value) || 1.8;
+      ctx.strokeStyle = "#2563eb"; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(60, 40); ctx.lineTo(60, 210); ctx.stroke();
+      ctx.fillStyle = "#2563eb"; ctx.font = "10px sans-serif";
+      ctx.fillText(`H=${profH}m`, 15, 125);
+
+      // Tubi Sezione
+      tubiCorrenti.forEach(t => {
+        const pipeY = 40 + (t.prof / profH) * 160;
+        ctx.fillStyle = (t.funzione === 'Ingresso') ? '#10b981' : '#ef4444';
+        ctx.fillRect(75, pipeY - 8, 20, 16);
+        ctx.fillRect(205, pipeY - 8, 20, 16);
+      });
+    }
+
+    /* SALVATAGGIO SCHEDA */
+    function salvaScheda() {
+      const codice = document.getElementById('codice').value.trim();
+      if (!codice) { alert("Inserisci l'ID Pozzetto!"); setStep(1); return; }
+
+      const pozzetto = {
+        id: Date.now(),
+        progetto: progettoAttivo,
+        codice: codice,
+        tipo: document.getElementById('tipo').value === 'Altro' ? document.getElementById('tipoAltro').value : document.getElementById('tipo').value,
+        lat: document.getElementById('lat').value,
+        lon: document.getElementById('lon').value,
+        quotaSLM: document.getElementById('quotaSLM').value,
+        formaChiusino: document.getElementById('formaChiusino').value,
+        dimChiusino: document.getElementById('dimChiusino').value,
+        matFusto: document.getElementById('matFusto').value,
+        profondita: document.getElementById('profondita').value,
+        scala: document.getElementById('scala').value,
+        tubi: JSON.parse(JSON.stringify(tubiCorrenti)),
+        foto: fotoBase64,
+        data: new Date().toLocaleDateString('it-IT')
+      };
+
+      pozzetti.unshift(pozzetto);
+      localStorage.setItem('pozzetti_data', JSON.stringify(pozzetti));
+      alert(`Scheda Pozzetto ${codice} salvata con successo!`);
+      setStep(4);
+    }
+
+    function aggiornaListaArchivio() {
+      const list = document.getElementById('listaPozzetti');
+      const filtrati = pozzetti.filter(p => p.progetto === progettoAttivo);
+
+      if (filtrati.length === 0) {
+        list.innerHTML = `<p style="color:var(--text-muted); font-size:13px;">Nessun pozzetto salvato per ${progettoAttivo}.</p>`;
+        return;
+      }
+
+      list.innerHTML = filtrati.map(p => `
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--card-border); padding:10px 0;">
+          <div>
+            <strong>${p.codice}</strong> <small>(${p.tipo})</small>
+            <div style="font-size:12px; color:var(--text-muted);">Prof: ${p.profondita}m | Lat: ${p.lat || '-'}, Lon: ${p.lon || '-'}</div>
+          </div>
+          <button class="btn btn-danger" style="width:auto; padding:4px 8px; font-size:12px;" onclick="eliminaPozzetto(${p.id})">Elimina</button>
+        </div>
+      `).join('');
+    }
+
+    function eliminaPozzetto(id) {
+      if (confirm("Eliminare questa scheda pozzetto?")) {
+        pozzetti = pozzetti.filter(p => p.id !== id);
+        localStorage.setItem('pozzetti_data', JSON.stringify(pozzetti));
+        aggiornaListaArchivio();
+      }
+    }
+
+    /* GENERAZIONE MONOGRAFIA A4 PERFETTA */
+    function apriAnteprimaMonografia() {
+      document.getElementById('mProgetto').innerText = progettoAttivo;
+      document.getElementById('mCodice').innerText = document.getElementById('codice').value || 'PZ-001';
+      document.getElementById('mData').innerText = new Date().toLocaleDateString('it-IT');
+      document.getElementById('mTipo').innerText = document.getElementById('tipo').value;
+      document.getElementById('mLat').innerText = document.getElementById('lat').value || '-';
+      document.getElementById('mLon').innerText = document.getElementById('lon').value || '-';
+      document.getElementById('mQuota').innerText = document.getElementById('quotaSLM').value ? document.getElementById('quotaSLM').value + ' m' : '-';
+      
+      document.getElementById('mFormaC').innerText = document.getElementById('formaChiusino').value;
+      document.getElementById('mDimC').innerText = document.getElementById('dimChiusino').value || 'Standard';
+      document.getElementById('mMatF').innerText = document.getElementById('matFusto').value;
+      document.getElementById('mProfH').innerText = (document.getElementById('profondita').value || '1.80') + ' m';
+      document.getElementById('mStato').innerText = 'Buono / Accessibile';
+
+      if (fotoBase64) {
+        document.getElementById('mFoto').src = fotoBase64;
+        document.getElementById('mFoto').style.display = 'block';
+      } else {
+        document.getElementById('mFoto').style.display = 'none';
+      }
+
+      // Tubi
+      document.getElementById('mTableTubi').innerHTML = tubiCorrenti.map(t => `
+        <tr>
+          <td>${t.funzione}</td>
+          <td>${t.direzione}</td>
+          <td>DN ${t.dn}</td>
+          <td>${t.prof} m</td>
+          <td>${t.materiale || 'PVC'}</td>
+        </tr>
+      `).join('');
+
+      // Render disegni vettoriali in immagini per la scheda
+      document.getElementById('mImgPianta').src = document.getElementById('canvasPianta').toDataURL();
+      document.getElementById('mImgSezione').src = document.getElementById('canvasSezione').toDataURL();
+
+      document.getElementById('modalMonografia').style.display = 'block';
+    }
+
+    function chiudiAnteprimaMonografia() {
+      document.getElementById('modalMonografia').style.display = 'none';
+    }
+
+    /* EXPORT DXF AUTOCAD 1:1 */
+    function esportaDXFProgetto() {
+      const filtrati = pozzetti.filter(p => p.progetto === progettoAttivo);
+      if (filtrati.length === 0) { alert("Nessun pozzetto salvato da esportare."); return; }
+
+      let dxf = `0\nSECTION\n2\nHEADER\n0\nENDSEC\n0\nSECTION\n2\nENTITIES\n`;
+
+      filtrati.forEach((p, i) => {
+        const x = i * 10; // offset spaziale per disegno 2D
+        const y = 0;
+        // Cerchio Pozzetto
+        dxf += `0\nCIRCLE\n8\nPOZZETTI\n10\n${x}\n20\n${y}\n30\n0.0\n40\n0.5\n`;
+        // Testo ID
+        dxf += `0\nTEXT\n8\nTESTI\n10\n${x - 0.5}\n20\n${y + 0.8}\n30\n0.0\n40\n0.2\n1\n${p.codice}\n`;
+      });
+
+      dxf += `0\nENDSEC\n0\nEOF\n`;
+
+      scaricaFile(dxf, `Rilievo_${progettoAttivo.replace(/\s+/g, '_')}.dxf`, 'application/dxf');
+    }
+
+    /* EXPORT GEOJSON PER QGIS */
+    function esportaGeoJSON() {
+      const filtrati = pozzetti.filter(p => p.progetto === progettoAttivo);
+      const geojson = {
+        type: "FeatureCollection",
+        features: filtrati.map(p => ({
+          type: "Feature",
+          geometry: {
+            type: "Point",
+            coordinates: [parseFloat(p.lon) || 0, parseFloat(p.lat) || 0, parseFloat(p.quotaSLM) || 0]
+          },
+          properties: {
+            codice: p.codice,
+            tipo: p.tipo,
+            profondita: p.profondita,
+            chiusino: p.formaChiusino,
+            data: p.data
+          }
+        }))
+      };
+      scaricaFile(JSON.stringify(geojson, null, 2), `GIS_${progettoAttivo.replace(/\s+/g, '_')}.geojson`, 'application/json');
+    }
+
+    /* EXPORT CSV EXCEL */
+    function esportaCSV() {
+      const filtrati = pozzetti.filter(p => p.progetto === progettoAttivo);
+      let csv = "\uFEFFID_Pozzetto;Tipologia;Latitudine;Longitudine;Quota_Z;Profondita_H;Data\n";
+      filtrati.forEach(p => {
+        csv += `"${p.codice}";"${p.tipo}";${p.lat};${p.lon};${p.quotaSLM};${p.profondita};"${p.data}"\n`;
+      });
+      scaricaFile(csv, `Tabella_${progettoAttivo.replace(/\s+/g, '_')}.csv`, 'text/csv');
+    }
+
+    function scaricaFile(contenuto, nomeFile, tipo) {
+      const blob = new Blob([contenuto], { type: tipo });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = nomeFile;
+      link.click();
+    }
+  </script>
+</body>
+</html>
+
